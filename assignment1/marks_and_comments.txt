@@ -1,0 +1,900 @@
+Session: 19T3
+Assignment: ass1_cs_paint  Submission ID: 5258068
+
+
+Your submission has been marked. + /usr/bin/less -m /import/kamen/5/z5258068/cs1511.ass1_cs_paint.mrk
+
+!!section banner
+#######  #####  #######  #####    ###    #####   #####
+#       #     # #       #     #  #   #  #     # #     #
+#             # #       #     # # #   # #       #     #
+ #####   #####   #####   #####  #  #  # ######   #####
+      # #             # #     # #   # # #     # #     #
+#     # #       #     # #     #  #   #  #     # #     #
+ #####  #######  #####   #####    ###    #####   #####
+
+5258068 Saruva, Soorriamoorthy S                3154/1 ACTLD1 MATHT1
+
+Submissions:-
+
+S 0     Fri Oct 18 20:09:28 2019        5258068 fri09-sitar ass1_cs_paint -8:-21
+S 1     Mon Oct 21 06:12:05 2019        5258068 fri09-sitar ass1_cs_paint -6:-11
+S 2     Mon Oct 21 08:19:24 2019        5258068 fri09-sitar ass1_cs_paint -6:-9
+S 0     Mon Oct 21 10:56:19 2019        5258068 fri09-sitar ass1_cs_paint -6:-7
+S 1     Mon Oct 21 12:15:48 2019        5258068 fri09-sitar ass1_cs_paint -6:-5
+S 2     Mon Oct 21 17:07:28 2019        5258068 fri09-sitar ass1_cs_paint -6:0
+S 0     Mon Oct 21 20:16:21 2019        5258068 fri09-sitar ass1_cs_paint -5:-21
+S 1     Wed Oct 23 01:22:16 2019        5258068 fri09-sitar ass1_cs_paint -4:-16
+S 2     Wed Oct 23 13:34:07 2019        5258068 fri09-sitar ass1_cs_paint -4:-4
+S 0     Wed Oct 23 17:28:43 2019        5258068 fri09-sitar ass1_cs_paint -4:0
+S 1     Wed Oct 23 18:13:26 2019        5258068 fri09-sitar ass1_cs_paint -3:-23
+S 2     Wed Oct 23 19:28:35 2019        5258068 fri09-sitar ass1_cs_paint -3:-22
+S 0     Sat Oct 26 23:02:17 2019        5258068 fri09-sitar ass1_cs_paint 0:-18
+
+Fri Nov 01 08:59:35 2019                ## tabla03.orchestra.cse.unsw.EDU.AU ##
+!!section listing
+-rw-r--r-- z5258068/z5258068 17278 2019-10-26 22:58 paint.c
+
+===============================================================================
+-rw-r----- 1 cs1511 cs1511 17278 Nov  1 08:59 paint.c
+===============================================================================
+
+     1  // Assignment 1 19T3 COMP1511: CS Paint
+     2  // paint.c
+     3  //
+     4  // This program was written by Soorriamoorthy S Saruva (z5258068)
+     5  //
+     6  // Version 1.6.1 (2019-10-23): Add comments and minor refactor
+     7
+     8  #include <stdio.h>
+     9
+    10  // Note: you may find the square root function (sqrt) from the math
+    11  // library useful for drawing ellipses in Stage 3 and Stage 4.
+    12  #include <math.h>
+    13
+    14  // The dimensions of the canvas (20 rows x 36 columns).
+    15  #define N_ROWS 20
+    16  #define N_COLS 36
+    17
+    18  // Shades (assuming your terminal has a black background).
+    19  #define BLACK 0
+    20  #define WHITE 4
+    21
+    22  // IF YOU NEED MORE #defines ADD THEM HERE
+    23  #define DRAW_LINE_ARG_COUNT 4
+    24  #define FILL_SQUARE_ARG_COUNT 4
+    25  #define SHADE_ARG_COUNT 1
+    26  #define COPY_ARG_COUNT 6
+    27  #define ELLIPSE_ARG_COUNT 6
+    28  #define MAX_ARG_COUNT 6
+        ^
+        + =========================================== +
+        + Great use of #defines! This will definitely +
+        + improve the readability of your code!       +
+        + =========================================== +
+    29
+    30  // Provided helper functions:
+    31  // Display the canvas.
+    32  void displayCanvas(int canvas[N_ROWS][N_COLS]);
+    33
+    34  // Clear the canvas by setting every pixel to be white.
+    35  void clearCanvas(int canvas[N_ROWS][N_COLS]);
+    36
+    37  // Calculate the distance between two points.
+    38  // Note: you will only need this function for the Draw Ellipse command
+    39  // in Stages 3 and 4.
+    40  double distance(int row1, int col1, int row2, int col2);
+    41
+    42  // Command Functions
+    43  // Command 1
+    44  void drawLine(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int angle, int shade);
+    45
+    46  // Command 2
+    47  void fillSquare(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int angle, int shade);
+    48
+    49  // Command 4
+    50  void copyPaste(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int targetX, int targetY);
+    51
+    52  // Command 0
+    53  void drawEllipse(int canvas[N_ROWS][N_COLS], int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length, int fill, int shade);
+    54
+    55  // Helper Functions
+    56  int isInCanvas(int row, int col);
+    57
+    58  int isSquareInCanvas(int startRow, int startCol, int length, int direction);
+    59
+    60  int isInEllipse(int row, int col, int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length);
+    61
+    62  int isOnEllipseEdge(int row, int col, int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length);
+    63
+    64  int getRowDir(int direction);
+    65
+    66  int getColDir(int direction);
+    67
+    68  int normaliseDirection(int direction, int isLengthNegative);
+    69
+    70  int abs(int n);
+    71
+    72  int getArgCount(int command);
+    73
+    74  void executeCommand(int canvas[N_ROWS][N_COLS], int command, int args[MAX_ARG_COUNT], int shade);
+        ^
+        + ======================================================= +
+        + Great to see you implementing so many helper functions! +
+        + ======================================================= +
+    75
+    76  int main(void) {
+    77      int canvas[N_ROWS][N_COLS];
+    78      int shade = BLACK;
+    79
+    80      clearCanvas(canvas);
+    81
+    82      int command;
+    83      while (scanf("%d", &command) == 1) {
+    84          int argCount = getArgCount(command);
+    85          int args[MAX_ARG_COUNT] = {0};
+    86          int i = 0;
+    87          if (command == 0) {
+    88              // Handle ellipse command separately as it needs
+    89              // a float input
+    90              // Get the first 4 arguments which are all integers
+    91              while (i < 4) {
+    92                  scanf("%d", &args[i]);
+    93                  i++;
+    94              }
+    95              // Handle length differently as it can be a double
+    96              double length;
+    97              scanf("%lf", &length);
+    98              // Get the last argument
+    99              scanf("%d", &args[5]);
+   100              drawEllipse(canvas, args[0], args[1], args[2], args[3], length, args[5], shade);
+                                                                                        ^
+                                            + ================================================== +
+                                            + LINE LENGTH: lines must be less than 80 characters +
+                                            + ================================================== +
+   101          } else if (command == 3) {
+                                      ^
+                                      + =============================================================== +
+                                      + CONSTANTS: you should create and use #defines e.g. CHANGE_SHADE +
+                                      + =============================================================== +
+   102              int shadeChange = 0;
+   103              // Get the amount the shade should change by
+   104              scanf("%d", &shadeChange);
+   105              int result = shade + shadeChange;
+   106              // Only change the shade if it is between 0 (BLACK)
+   107              // and 4 (WHITE) inclusive.
+   108              if (result >= 0 && result <= 4) {
+                                                 ^
+                                                 + ========================================================== +
+                                                 + CONSTANTS: you should use the provided #defines e.g. WHITE +
+                                                 + ========================================================== +
+   109                  shade = result;
+   110              }
+   111          } else {
+   112              // Get all the arguments for the Draw Line, Fill
+   113              // Square and Copy Paste commands.
+   114              while (i < argCount) {
+   115                  scanf("%d", &args[i]);
+   116                  i++;
+   117              }
+   118              // Run the given command
+   119              executeCommand(canvas, command, args, shade);
+   120          }
+   121      }
+   122
+   123      displayCanvas(canvas);
+   124
+   125      return 0;
+   126  }
+   127
+   128  // * ADD CODE FOR YOUR FUNCTIONS HERE
+   129
+   130  // Draws a line in the canvas.
+   131  void drawLine(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int shade) {
+   132      // Assume the line is valid then correct later
+   133      int isValid = 1;
+   134
+   135      // Get the direction adjusted to be between 0 and 360 degress
+   136      direction = normaliseDirection(direction, length < 0);
+   137
+   138      // Get the relative directions according to the angle
+   139      int rowDir = getRowDir(direction);
+   140      int colDir = getColDir(direction);
+   141
+   142      // If both relative directions are `0`, the line is invalid
+   143      if (rowDir == 0 && colDir == 0) {
+   144          isValid = 0;
+   145      }
+   146
+   147      // Calculate the enpoints of the line
+   148      int endRow = startRow + (length - 1) * rowDir;
+   149      int endCol = startCol + (length - 1) * colDir;
+   150
+   151      // Check if the endpoints lie withinin the canvas
+   152      isValid = isInCanvas(startRow, startCol) &&
+   153                isInCanvas(endRow, endCol) &&
+   154                isValid;
+   155
+   156      // if the line is valid, draw it
+   157      if (isValid) {
+   158          int i = 0;
+   159          while (i < length) {
+   160              int currentRow = startRow + i * rowDir;
+   161              int currentCol = startCol + i * colDir;
+   162              canvas[currentRow][currentCol] = shade;
+   163              i++;
+   164          }
+   165      }
+   166  }
+   167
+   168  // Draws a filled square in the canvas.
+   169  // Requires the above `drawLine` function.
+   170  void fillSquare(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int shade) {
+                                                                                        ^
+                                            + ================================================================= +
+                                            + LINE LENGTH: lines must be less than 80 characters                +
+                                            +                (+ 1 other line length errors)                     +
+                                            + ================================================================= +
+   171      // Assume the rectangle is valid then correct later
+   172      int isValidSquare = 1;
+   173      // Get the direction adjusted to be between 0 and 360 degress
+   174      direction = normaliseDirection(direction, length < 0);
+   175      // Get the direction of the pixels to be drawn relative to the
+   176      // start row and column
+   177      int rowDir = getRowDir(direction);
+   178      int colDir = getColDir(direction);
+   179
+   180      // If the relative row or column directions are 0, then it is
+   181      // a line or and invalid function call (i.e. not a valid
+   182      // square)
+   183      if (rowDir == 0 || colDir == 0) {
+   184          isValidSquare = 0;
+   185
+   186          // If the relative row and column directions are different,
+   187          // then it is a line
+   188          if (rowDir != colDir) {
+   189              drawLine(canvas, startRow, startCol, length, direction, shade);
+   190          }
+   191      }
+   192
+   193      // check if the square lies within the canvas
+   194      isValidSquare = isSquareInCanvas(startRow, startCol, length, direction) &&
+   195                      isValidSquare;
+   196      // Get the absolue value of the length to account for if it
+   197      // is negative
+   198      length = abs(length);
+   199
+   200      // if the square is valid, draw it
+           ^
+           + ============================================================== +
+           + Great comments explaining your code. However, your code is     +
+           + starting to get a bit clustered. I would recommend explaining  +
+           + more of this in your function description. In this case, your  +
+           + function name is so self explanatory you don't even need a     +
+           + comment to explain it! :)                                      +
+           + ============================================================== +
+   201      if (isValidSquare) {
+   202          int i = 0;
+   203          int drawDirection;
+   204          // if the relative row direction is `-1`, then the lines
+   205          // should be drawn below it. Otherwise, the lines should
+   206          // be drawn above it
+   207          if (rowDir == -1) {
+   208              drawDirection = 0;
+   209          } else {
+   210              drawDirection = 180;
+   211          }
+   212          // Draw the square by draw all the lines required
+   213          while (i < length) {
+   214              int currentCol = startCol + i * colDir;
+   215              drawLine(canvas, startRow, currentCol, length, drawDirection, shade);
+   216              i++;
+   217          }
+   218      }
+   219  }
+   220
+   221  // Copies a square of pixels from the canvas to another spot in the
+   222  // canvas.
+   223  void copyPaste(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int targetRow, int targetCol) {
+                                                                                        ^
+                                            + ================================================== +
+                                            + LINE LENGTH: lines must be less than 80 characters +
+                                            + ================================================== +
+   224      // Assume the source and target are valid then correct later
+   225      int isValid = 1;
+   226      // Get the direction adjusted to be between 0 and 360 degress
+   227      direction = normaliseDirection(direction, length < 0);
+   228      // Get the direction of the pixels to be drawn relative to the
+   229      // start row and column
+   230      int rowDir = getRowDir(direction);
+   231      int colDir = getColDir(direction);
+   232
+   233      // If the relative directions are 0, then the direction was
+   234      // not valid
+   235      if (rowDir == 0 && colDir == 0) {
+   236          isValid = 0;
+   237      }
+   238
+   239      // Get the absolue value of the length to account for if it
+   240      // is negative
+   241      length = abs(length);
+   242
+   243      // Check whether the source and target squares lie completely
+   244      // within the canvas
+   245      isValid = isSquareInCanvas(startRow, startCol, length, direction) &&
+   246                isSquareInCanvas(targetRow, targetCol, length, direction) &&
+   247                isValid;
+   248
+   249      // Source and target square are valid, then copy the source
+   250      // to the target
+   251      if (isValid) {
+   252          int i = 0;
+   253          int j = 0;
+   254          // Array to hold copy of original
+   255          int source[N_ROWS][N_COLS] = {0};
+   256          // Copy original from canvas into the source array
+   257          while (i < length) {
+   258              j = 0;
+   259              while (j < length) {
+   260                  source[i][j] = canvas[startRow + i * rowDir][startCol + j * colDir];
+   261                  j++;
+   262              }
+   263              i++;
+   264          }
+   265
+   266          // Copy from source array to target position in the canvas
+   267          i = 0;
+   268          while (i < length) {
+   269              j = 0;
+   270              while (j < length) {
+   271                  // Set the target cell to the corresponding source cell
+   272                  canvas[targetRow + i * rowDir][targetCol + j * colDir] = source[i][j];
+   273                  j++;
+   274              }
+   275              i++;
+   276          }
+   277      }
+   278  }
+   279
+   280  // Draws an ellipse to the canvas with given foci, radius, shade and
+   281  // whether it should be filled.
+   282  void drawEllipse(int canvas[N_ROWS][N_COLS], int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length, int fill, int shade) {
+                                                                                        ^
+                                            + ================================================== +
+                                            + LINE LENGTH: lines must be less than 80 characters +
+                                            + ================================================== +
+   283      // Iterate over all pixels of the canvas to check if they
+   284      // should be drawn as part of the ellipse.
+   285      int i = 0;
+   286      while (i < N_ROWS) {
+   287          int j = 0;
+   288          while (j < N_COLS) {
+   289              if (fill == 0) {
+   290                  // If there should be no fill, change pixel colour
+   291                  // according to if it is on the edge of the ellipse.
+   292                  if (isOnEllipseEdge(i, j, focus1Row, focus1Col, focus2Row, focus2Col, length)) {
+   293                      canvas[i][j] = shade;
+                            ^
+                            + ================================================================= +
+                            + OVERDEEP_NESTING: nesting too deep: 5 (try moving some of the     +
+                            + logic into another function)                                      +
+                            + ================================================================= +
+   294                  }
+   295              } else {
+   296                  // If there should be fill, change pixel colour
+   297                  // according to if it is in the ellipse.
+   298                  if (isInEllipse(i, j, focus1Row, focus1Col, focus2Row, focus2Col, length)) {
+   299                      canvas[i][j] = shade;
+   300                  }
+   301              }
+   302              j++;
+   303          }
+   304          i++;
+   305      }
+   306  }
+   307
+   308  // Checks whether the specified row and column indices lie in
+   309  // the canvas. Requires N_ROWS and N_COLS defined above.
+   310  int isInCanvas(int row, int col) {
+   311      // Return 1 if row is between 0 and N_ROWS and col is
+   312      // between 0 and N_COLS
+   313      return ((row >= 0) &&
+   314              (row < N_ROWS) &&
+   315              (col >= 0) &&
+   316              (col < N_COLS));
+   317  }
+   318
+   319  // Checks whether the square with given start row and column, length
+   320  // and direction is wholly contained within the canvas.
+   321  int isSquareInCanvas(int startRow, int startCol, int length, int direction) {
+   322      // Get the normalised direction
+   323      direction = normaliseDirection(direction, length < 0);
+   324      // Get the absolute value of the length to account for it is
+   325      // negative
+   326      length = abs(length);
+   327
+   328      // Get the direction of the pixels to be drawn relative to the
+   329      // start row and column
+   330      int rowDir = getRowDir(direction);
+   331      int colDir = getColDir(direction);
+   332
+   333      // Calculate the coordinates of the opposite corner of the square
+   334      int endRow = startRow + (length - 1) * rowDir;
+   335      int endCol = startCol + (length - 1) * colDir;
+   336
+   337      // Return whether both the start and end points are in the canvas
+   338      return isInCanvas(startRow, startCol) && isInCanvas(endRow, endCol);
+   339  }
+   340
+   341  // Returns whether a point is within the ellipse with the given
+   342  // foci and length.
+   343  int isInEllipse(int i, int j, int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length) {
+                                                                                        ^
+                                            + ================================================================= +
+                                            + LINE LENGTH: lines must be less than 80 characters                +
+                                            +                (+ 2 other line length errors)                     +
+                                            + ================================================================= +
+   344      return distance(focus1Row, focus1Col, i, j) + distance(focus2Row, focus2Col, i, j) <= 2 * length;
+   345  }
+   346
+   347  // Returns whether a point is on the edge of the ellipse with the
+   348  // given foci and length.
+   349  int isOnEllipseEdge(int row, int col, int focus1Row, int focus1Col, int focus2Row, int focus2Col, double length) {
+   350      // The current pixel should be in the ellipse
+   351      int thisPixelIsIn = isInEllipse(row, col, focus1Row, focus1Col, focus2Row, focus2Col, length);
+   352      // At least one of the pixels below up, right, down or
+   353      // left of the above pixel should not be in the ellipse
+   354      int upIsNotIn = !isInEllipse(row - 1, col, focus1Row, focus1Col, focus2Row, focus2Col, length);
+   355      int rightIsNotIn = !isInEllipse(row, col + 1, focus1Row, focus1Col, focus2Row, focus2Col, length);
+   356      int downIsNotIn = !isInEllipse(row + 1, col, focus1Row, focus1Col, focus2Row, focus2Col, length);
+   357      int leftIsNotIn = !isInEllipse(row, col - 1, focus1Row, focus1Col, focus2Row, focus2Col, length);
+   358      // Return 1 if any of the pixels around the checked
+   359      // pixel is not in the ellipse and the checked pixel
+   360      // is in the ellipse.
+   361      return (upIsNotIn || rightIsNotIn || downIsNotIn || leftIsNotIn) && thisPixelIsIn;
+   362  }
+   363
+   364  // Returns which direction (positive/right or negative/left)
+   365  // the row(s) of the result should be, relative to the start.
+   366  // Returns `0` if there should be no pixels drawn in either
+   367  // horizontal direction
+   368  int getRowDir(int direction) {
+   369      if (direction == 0 || direction == 45 || direction == 315) {
+   370          // If the direction requires upward drawing, return `-1`
+   371          return -1;
+   372      } else if (direction == 135 || direction == 180 || direction == 225) {
+   373          // If the direction requires downward drawing, return `1`
+   374          return 1;
+   375      }
+   376      // If the angle is none of the above, there is no vertical movement
+   377      // when drawing and return `0`
+   378      return 0;
+   379  }
+   380
+   381  // Returns which direction (positive/down or negative/up)
+   382  // the column(s) of the result should be relative to the start.
+   383  // Returns `0` if there should be no pixels drawn in either
+   384  // vertical direction
+   385  int getColDir(int direction) {
+   386      if (direction == 225 || direction == 270 || direction == 315) {
+   387          // If the direction requires leftward drawing, return `-1`
+   388          return -1;
+   389      } else if (direction == 45 || direction == 90 || direction == 135) {
+   390          // If the direction requires rightward drawing, return `1`
+   391          return 1;
+   392      }
+   393      // If the angle is none of the above, there is no horizontal movement
+   394      // when drawing and return `0`
+   395      return 0;
+   396  }
+   397
+   398  // Returns the direction adjusted for a negative length and an
+   399  // angle greater than 360 degrees.
+   400  int normaliseDirection(int direction, int isLengthNegative) {
+   401      int result = direction;
+   402      // If the length is negative add 180 to the original angle
+   403      // to get the angle opposite on a compass
+   404      if (isLengthNegative) {
+   405          result += 180;
+   406      }
+   407      // Return the equivalent angle between 0 and 360
+   408      return result % 360;
+   409  }
+   410
+   411  // Returns the absolute value of the input integer.
+   412  int abs(int n) {
+   413      // If n is negative, return its negative
+   414      if (n < 0) {
+   415          return -n;
+   416      }
+   417      // If n is positive, return n
+   418      return n;
+   419  }
+   420
+   421  // Returns the argument count required for the given command.
+   422  int getArgCount(int command) {
+   423      if (command == 0) {
+   424          // Ellipse command
+   425          return ELLIPSE_ARG_COUNT;
+   426      } else if (command == 1) {
+   427          // Draw line command
+   428          return DRAW_LINE_ARG_COUNT;
+   429      } else if (command == 2) {
+                                  ^
+                                  + ============================================================== +
+                                  + CONSTANTS: you should create and use #defines e.g. FILL_SQUARE +
+                                  + ============================================================== +
+   430          // Fill Square command
+   431          return FILL_SQUARE_ARG_COUNT;
+   432      } else if (command == 3) {
+   433          // Shade command
+   434          return SHADE_ARG_COUNT;
+   435      } else if (command == 4) {
+                                  ^
+                                  + ================================================================= +
+                                  + CONSTANTS: you should create and use #defines e.g. COPY_PASTE     +
+                                  +                           (+ 1 other constants errors)            +
+                                  + ================================================================= +
+   436          // Copy Paste command
+   437          return COPY_ARG_COUNT;
+   438      }
+   439      return 0;
+   440  }
+   441
+   442  // Calls a function for the given command number with the
+   443  // given arguments.
+   444  void executeCommand(int canvas[N_ROWS][N_COLS], int command, int args[MAX_ARG_COUNT], int shade) {
+                                                                                        ^
+                                            + ================================================================= +
+                                            + LINE LENGTH: lines must be less than 80 characters                +
+                                            +                (+ 1 other line length errors)                     +
+                                            + ================================================================= +
+   445      if (command == 1) {
+   446          drawLine(canvas, args[0], args[1], args[2], args[3], shade);
+   447      } else if (command == 2) {
+   448          fillSquare(canvas, args[0], args[1], args[2], args[3], shade);
+   449      } else if (command == 4) {
+   450          copyPaste(canvas, args[0], args[1], args[2], args[3], args[4], args[5]);
+   451      }
+   452  }
+   453
+   454  // Displays the canvas, by printing the integer value stored in
+   455  // each element of the 2-dimensional canvas array.
+   456  //
+   457  // You should not need to change the displayCanvas function.
+   458  void displayCanvas(int canvas[N_ROWS][N_COLS]) {
+   459      int row = 0;
+   460      while (row < N_ROWS) {
+   461          int col = 0;
+   462          while (col < N_COLS) {
+   463              printf("%d ", canvas[row][col]);
+   464              col++;
+   465          }
+   466          row++;
+   467          printf("\n");
+   468      }
+   469  }
+   470
+   471  // Sets the entire canvas to be blank, by setting each element in the
+   472  // 2-dimensional canvas array to be WHITE (which is #defined at the top
+   473  // of the file).
+   474  //
+   475  // You should not need to change the clearCanvas function.
+   476  void clearCanvas(int canvas[N_ROWS][N_COLS]) {
+   477      int row = 0;
+   478      while (row < N_ROWS) {
+   479          int col = 0;
+   480          while (col < N_COLS) {
+   481              canvas[row][col] = WHITE;
+   482              col++;
+   483          }
+   484          row++;
+   485      }
+   486  }
+   487
+   488  // Calculate the distance between two points (row1, col1) and (row2, col2).
+   489  // Note: you will only need this function for the Draw Ellipse command
+   490  // in Stages 3 and 4.
+   491  double distance(int row1, int col1, int row2, int col2) {
+   492      int row_dist = row2 - row1;
+   493      int col_dist = col2 - col1;
+   494      return sqrt((row_dist * row_dist) + (col_dist * col_dist));
+   495  }
+
+===============================================================================
+---------- # Style Summary
+===============================================================================
+
+^
++ ================================================================================================================== +
++                                                                                                                    +
++ ========================================                                                                           +
++ =====    Style feedback summary:   =====                                                                           +
++ ========================================                                                                           +
++                                                                                                                    +
++ ====== Header Comment =====                                                                                        +
++ Header comment has 6 lines (1 lines of description)                                                                +
++ Header comment contains zID!                                                                                       +
++                                                                                                                    +
++ ====== #defines =====                                                                                              +
++ 6 additional constants #defined:                                                                                   +
++     23  #define DRAW_LINE_ARG_COUNT 4                                                                              +
++     24  #define FILL_SQUARE_ARG_COUNT 4                                                                            +
++     25  #define SHADE_ARG_COUNT 1                                                                                  +
++     26  #define COPY_ARG_COUNT 6                                                                                   +
++     27  #define ELLIPSE_ARG_COUNT 6                                                                                +
++     28  #define MAX_ARG_COUNT 6                                                                                    +
++                                                                                                                    +
++ ====== Nesting Depth =======                                                                                       +
++ Nesting depth was too much: max depth of 5!                                                                        +
++                                                                                                                    +
++ ====== Whitespace Errors =====                                                                                     +
++ No whitespace errors!                                                                                              +
++                                                                                                                    +
++ ====== Indentation =======                                                                                         +
++ No indentation issues!                                                                                             +
++                                                                                                                    +
++ ====== Over-long Lines =======                                                                                     +
++ You had 17 lines over 80 characters:                                                                               +
++                                                                                                                    +
++ (note: lines have been wrapped to fit in this comment -- the longest line was 142 characters)                      +
++                                                                                         V                          +
++    131  void drawLine(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int       +
++             shade) {                                                                                               +
++    ---                                                                                                             +
++                                                                                         V                          +
++    170  void fillSquare(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction,         +
++             int shade) {                                                                                           +
++    ---                                                                                                             +
++                                                                                         V                          +
++    223  void copyPaste(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length, int direction, int      +
++             targetRow, int targetCol) {                                                                            +
++    ---                                                                                                             +
++                                                                                         V                          +
++    282  void drawEllipse(int canvas[N_ROWS][N_COLS], int focus1Row, int focus1Col, int focus2Row, int              +
++             focus2Col, double length, int fill, int shade) {                                                       +
++    ---                                                                                                             +
++                                                                                         V                          +
++    343  int isInEllipse(int i, int j, int focus1Row, int focus1Col, int focus2Row, int focus2Col, double           +
++             length) {                                                                                              +
++    ---                                                                                                             +
++                                                                                         V                          +
++    349  int isOnEllipseEdge(int row, int col, int focus1Row, int focus1Col, int focus2Row, int focus2Col,          +
++             double length) {                                                                                       +
++    ---                                                                                                             +
++                                                                                         V                          +
++    351      int thisPixelIsIn = isInEllipse(row, col, focus1Row, focus1Col, focus2Row, focus2Col, length);         +
++                                                                                         V                          +
++    354      int upIsNotIn = !isInEllipse(row - 1, col, focus1Row, focus1Col, focus2Row, focus2Col, length);        +
++                                                                                         V                          +
++    355      int rightIsNotIn = !isInEllipse(row, col + 1, focus1Row, focus1Col, focus2Row, focus2Col, length);     +
++                                                                                         V                          +
++    356      int downIsNotIn = !isInEllipse(row + 1, col, focus1Row, focus1Col, focus2Row, focus2Col, length);      +
++                                                                                         V                          +
++    357      int leftIsNotIn = !isInEllipse(row, col - 1, focus1Row, focus1Col, focus2Row, focus2Col, length);      +
++                                                                                         V                          +
++    444  void executeCommand(int canvas[N_ROWS][N_COLS], int command, int args[MAX_ARG_COUNT], int shade) {         +
++ (and 5 more)                                                                                                       +
++                                                                                                                    +
++ ====== Complex If Statements =======                                                                               +
++ No complex if statements!                                                                                          +
++                                                                                                                    +
++ ====== Functions and Prototypes =====                                                                              +
++                                                                                                                    +
++ Function implementations:                                                                                          +
++                                                                                                                    +
++ paint.c functions:                                                                                                 +
++     76  int main(void) {                                                                                           +
++          -> 50 lines long (46 code lines)                                                                          +
++          -> (has no function comment!)                                                                             +
++    131  void drawLine(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int length,                          +
++             int direction, int shade) {                                                                            +
++          -> 35 lines long (29 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    170  void fillSquare(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int                                +
++             length, int direction, int shade) {                                                                    +
++          -> 49 lines long (45 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    223  void copyPaste(int canvas[N_ROWS][N_COLS], int startRow, int startCol, int                                 +
++             length, int direction, int targetRow, int targetCol) {                                                 +
++          -> 55 lines long (50 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    282  void drawEllipse(int canvas[N_ROWS][N_COLS], int focus1Row, int focus1Col, int                             +
++             focus2Row, int focus2Col, double length, int fill, int shade) {                                        +
++          -> 24 lines long (24 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    310  int isInCanvas(int row, int col) {                                                                         +
++          -> 7 lines long (7 code lines)                                                                            +
++          -> (has a 2 line function comment)                                                                        +
++    321  int isSquareInCanvas(int startRow, int startCol, int length, int direction) {                              +
++          -> 18 lines long (15 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    343  int isInEllipse(int i, int j, int focus1Row, int focus1Col, int focus2Row, int                             +
++             focus2Col, double length) {                                                                            +
++          -> 2 lines long (2 code lines)                                                                            +
++          -> (has a 2 line function comment)                                                                        +
++    349  int isOnEllipseEdge(int row, int col, int focus1Row, int focus1Col, int                                    +
++             focus2Row, int focus2Col, double length) {                                                             +
++          -> 13 lines long (13 code lines)                                                                          +
++          -> (has a 2 line function comment)                                                                        +
++    368  int getRowDir(int direction) {                                                                             +
++          -> 11 lines long (11 code lines)                                                                          +
++          -> (has a 4 line function comment)                                                                        +
++    385  int getColDir(int direction) {                                                                             +
++          -> 11 lines long (11 code lines)                                                                          +
++          -> (has a 4 line function comment)                                                                        +
++    400  int normaliseDirection(int direction, int isLengthNegative) {                                              +
++          -> 9 lines long (9 code lines)                                                                            +
++          -> (has a 2 line function comment)                                                                        +
++    412  int abs(int n) {                                                                                           +
++          -> 7 lines long (7 code lines)                                                                            +
++          -> (has a 1 line function comment)                                                                        +
++    422  int getArgCount(int command) {                                                                             +
++          -> 18 lines long (18 code lines)                                                                          +
++          -> (has a 1 line function comment)                                                                        +
++    444  void executeCommand(int canvas[N_ROWS][N_COLS], int command, int                                           +
++             args[MAX_ARG_COUNT], int shade) {                                                                      +
++          -> 8 lines long (8 code lines)                                                                            +
++          -> (has a 2 line function comment)                                                                        +
++    458  void displayCanvas(int canvas[N_ROWS][N_COLS]) {                                                           +
++          -> 11 lines long (11 code lines)                                                                          +
++          -> (has a 1 line function comment)                                                                        +
++    476  void clearCanvas(int canvas[N_ROWS][N_COLS]) {                                                             +
++          -> 10 lines long (10 code lines)                                                                          +
++          -> (has a 1 line function comment)                                                                        +
++    491  double distance(int row1, int col1, int row2, int col2) {                                                  +
++          -> 4 lines long (4 code lines)                                                                            +
++          -> (has no function comment!)                                                                             +
++                                                                                                                    +
++ ====== Variables =======                                                                                           +
++ Declared 49 additional variables:                                                                                  +
++     77  int canvas[N_ROWS][N_COLS];                                                                                +
++     78  int shade = BLACK;                                                                                         +
++     82  int command;                                                                                               +
++     84  int argCount = getArgCount(command);                                                                       +
++     85  int args[MAX_ARG_COUNT] = {0};                                                                             +
++     86  int i = 0;                                                                                                 +
++     96  double length;                                                                                             +
++    102  int shadeChange = 0;                                                                                       +
++    105  int result = shade + shadeChange;                                                                          +
++    133  int isValid = 1;                                                                                           +
++    139  int rowDir = getRowDir(direction);                                                                         +
++    140  int colDir = getColDir(direction);                                                                         +
++    148  int endRow = startRow + (length - 1) * rowDir;                                                             +
++    149  int endCol = startCol + (length - 1) * colDir;                                                             +
++    158  int i = 0;                                                                                                 +
++    160  int currentRow = startRow + i * rowDir;                                                                    +
++    161  int currentCol = startCol + i * colDir;                                                                    +
++    172  int isValidSquare = 1;                                                                                     +
++    177  int rowDir = getRowDir(direction);                                                                         +
++    178  int colDir = getColDir(direction);                                                                         +
++    202  int i = 0;                                                                                                 +
++    203  int drawDirection;                                                                                         +
++    214  int currentCol = startCol + i * colDir;                                                                    +
++    225  int isValid = 1;                                                                                           +
++    230  int rowDir = getRowDir(direction);                                                                         +
++    231  int colDir = getColDir(direction);                                                                         +
++    252  int i = 0;                                                                                                 +
++    253  int j = 0;                                                                                                 +
++    255  int source[N_ROWS][N_COLS] = {0};                                                                          +
++    285  int i = 0;                                                                                                 +
++    287  int j = 0;                                                                                                 +
++    330  int rowDir = getRowDir(direction);                                                                         +
++    331  int colDir = getColDir(direction);                                                                         +
++    334  int endRow = startRow + (length - 1) * rowDir;                                                             +
++    335  int endCol = startCol + (length - 1) * colDir;                                                             +
++    351  int thisPixelIsIn = isInEllipse(row, col, focus1Row, focus1Col, focus2Row, focus2Col, length);             +
++    401  int result = direction;                                                                                    +
++    459  int row = 0;                                                                                               +
++    461  int col = 0;                                                                                               +
++    477  int row = 0;                                                                                               +
++    479  int col = 0;                                                                                               +
++    492  int row_dist = row2 - row1;                                                                                +
++    493  int col_dist = col2 - col1;                                                                                +
++                                                                                                                    +
++ ================================================================================================================== +
+^
++ ========================================================================================================== +
++                                                                                                            +
++ Great:                                                                                                     +
++ ------                                                                                                     +
++   Functions                                                                                                +
++   Whitespace                                                                                               +
++   Comments                                                                                                 +
++   Line length                                                                                              +
++   Variable names                                                                                           +
++   Indentation                                                                                              +
++   Header comment                                                                                           +
++                                                                                                            +
++                                                                                                            +
++ A few issues:                                                                                              +
++ -------------                                                                                              +
++   Nesting depth (see summary above)                                                                        +
++   Constants (#defines) (you should create and use your own #defines, and should use the provided #defines) +
++                                                                                                            +
++ ========================================================================================================== +
+!!section tests
+!!section assess
+
+Marking Summary:
+
+|------------------------------------------|--------------|--------------|
+| Test Name                                | Tests Passed | % Gained     |
+|------------------------------------------|--------------|--------------|
+| No Lines                                 |  1/1         | 1.0/1        |
+| Line w/ Length of 0                      |  2/2         | 1.0/1        |
+| Line w/ Length of 1                      |  24/24       | 28.0/28      |
+| Drawing Points                           |  2/2         | 5.0/5        |
+| Drawing Along Bounds                     |  1/1         | 5.0/5        |
+| Drawing Many Lines                       |  16/16       | 10.0/10      |
+| Only Some Valid Lines                    |  8/8         | 2.0/2        |
+| Lines w/ Invalid Angles                  |  4/4         | 2.0/2        |
+| Invalid Lines                            |  19/19       | 2.0/2        |
+| Long & Invalid Lines                     |  4/4         | 1.0/1        |
+| Multiple Squares                         |  20/20       | 3.0/3        |
+| Single Square                            |  30/30       | 2.0/2        |
+| Some Invalid Squares                     |  8/8         | 1.0/1        |
+| Lines & Squares                          |  4/4         | 1.0/1        |
+| Invalid Squares                          |  21/21       | 1.0/1        |
+| Some Invalid Diag. Lines                 |  8/8         | 1.0/1        |
+| Many Diagonal Lines                      |  16/16       | 2.0/2        |
+| One Diagonal Line                        |  24/24       | 1.0/1        |
+| Invalid Diag. Lines                      |  19/19       | 1.0/1        |
+| Negative Length Lines                    |  0/32        | 0.0/3        |
+| Negative Length Squares                  |  0/32        | 0.0/2        |
+| Coloured Lines                           |  20/20       | 3.0/3        |
+| Coloured Squares                         |  20/20       | 2.0/2        |
+| Copy & Paste                             |  12/12       | 3.0/3        |
+| Invalid Copy & Paste                     |  12/12       | 2.0/2        |
+| Ellipses                                 |  17/17       | 3.0/3        |
+| Many Ellipses                            |  3/3         | 2.0/2        |
+| Overlapping Copy&Paste                   |  6/6         | 5.0/5        |
+| Hollow Ellipses                          |  17/17       | 2.0/2        |
+| Many Hollow Ellipses                     |  3/3         | 3.0/3        |
+
+(* indicates test passed some, but not all tests)
+
+NOTE: The following mark may be slightly different to the sum of
+the "Mark Allocation" column above. This is due to rounding, not
+a mistake. We will not change marks because of rounding.
+
+Sum of percentage points gained: 95.0/100
+
+This mark gets scaled to be out of 80:
+
+Mark for automarking tests: 76.0/80
+
+
+NOTE: Due to an ambiguity in the spec, two interpretations of copy paste were
+allowed. This means that copy paste tests happen twice. You were awarded the
+maximum of the marks you would have got under either interpretation.
+
+
+You can rerun the tests used in marking by running: 1511 automark cs_paint
+
+!!specialmark  (automated testing)                      76.0/80
+
+!!marktab       **  MARKER'S  ASSESSMENT  **
+
+                                style  (20)     19???
+ ^
+ + =============================================================== +
+ + Awesome work for this assignment! You show great effort to      +
+ + ensure your excellent style throughout your assignment. You     +
+ + make sure to give all your functions and varaibles appropriate  +
+ + and self explanatory names which makes it super easy to read    +
+ + and understand your code. You have a few instances of overdeep  +
+ + nesting which suggests you need to simplify areas of your       +
+ + code, perhaps by implementing even more helper functions. Keep  +
+ + up the good work!                                               +
+ + =============================================================== +
+
+!!finalmark     **  FINAL  ASSIGNMENT  MARK:    95/100
+
+5258068 Saruva, Soorriamoorthy S                3154/1 ACTLD1 MATHT1
+
+
+Marked by z5209369 on Sun Nov 10 19:07:09 2019
+
+
+
